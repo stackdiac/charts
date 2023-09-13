@@ -1,0 +1,28 @@
+schema:
+  openapi: 3.0.2
+  components:
+    schemas:
+      CronJobs:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            schedule:
+              type: string
+            failedJobsHistoryLimit:
+              type: integer
+            successfulJobsHistoryLimit:
+              type: integer
+            command:
+              type: string
+            restartPolicy:
+              type: string
+            concurrencyPolicy:
+              type: string
+            target:
+              type: object
+              properties:
+                annotation:
+                  type: string
+                value:
+                  type: string

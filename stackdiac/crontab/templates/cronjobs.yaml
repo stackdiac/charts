@@ -1,0 +1,55 @@
+{{ $global := . }}
+
+{{- range $cronJobName, $cronJob := .Values.cronjobs }}
+
+
+{{ $targetValue := $cronJob.target.value }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "crontab.fullname" $global }}-{{ $cronJobName }}
+  labels:
+    {{- include "crontab.labels" $global | nindent 4 }}
+
+# show full cronjob spec with node selector, tolerations, etc.
+# job should execute kubectl, find pod from target annotation and execute command
+spec:
+  schedule: "{{ $cronJob.schedule }}"
+  failedJobsHistoryLimit: {{ default "1" $cronJob.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ default "1" $cronJob.successfulJobsHistoryLimit }}
+  concurrencyPolicy: {{ default "Forbid" $cronJob.concurrencyPolicy }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{- with $cronJob.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with $cronJob.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          restartPolicy: {{ default "Never" $cronJob.restartPolicy }}
+          containers:
+            - name: {{ $cronJobName }}
+              image: {{ $global.Values.image.repository }}:{{ $global.Values.image.tag | default $global.Chart.AppVersion }}
+              imagePullPolicy: {{ $global.Values.image.pullPolicy }}
+              command:                 
+                - "/bin/sh"
+                - "-c"
+                - >                   
+                  POD=$(kubectl get pods -o=jsonpath='{.items[?(@.metadata.annotations.{{ regexReplaceAll "\\." $cronJob.target.annotation "\\." }}=="{{ $cronJob.target.value }}")].metadata.name}' | head -n1);
+                  echo "Executing {{ $cronJob.command }} on pod $POD";
+                  kubectl exec $POD {{with $cronJob.container }}-c {{ . }}{{end}} -- {{ $cronJob.command }}                
+              {{- with $cronJob.resources }}
+              resources:
+                {{- toYaml . | nindent 12 }}
+              {{- end }}          
+          serviceAccountName: {{ include "crontab.serviceAccountName" $global }}          
+          {{- with $cronJob.annotations }}
+          annotations:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+{{ end }} # end range
+
