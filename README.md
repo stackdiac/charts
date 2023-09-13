@@ -1,5 +1,5 @@
-# charts
-Helm charts
+# stackdiac charts
+
 
 ~~~
 helm repo add stackdiac https://stackdiac.github.io/charts
