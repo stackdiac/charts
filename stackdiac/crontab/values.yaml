@@ -2,13 +2,20 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+## @section Global parameters
+## Global Docker image parameters
+
+
+## @param image.repository kubectl image repository
+## @param image.tag kubectl image tag
+## @param image.pullPolicy kubectl image pull policy
 image:
   repository: bitnami/kubectl
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
-
+## @param cronjobs cronjobs map to configure
 cronjobs: {}
   # backup:
   #   schedule: "0 10 * * *"
@@ -21,10 +28,18 @@ cronjobs: {}
   #     annotation: "crontab.stackd.cloud/cronjob"
   #     value: "backup"
 
+## @param imagePullSecrets Specify image pull secrets 
 imagePullSecrets: []
+
+## @param nameOverride String to partially override crontab.fullname
 nameOverride: ""
+
+## @param fullnameOverride String to fully override crontab.fullname
 fullnameOverride: ""
 
+## @param serviceAccount.create Specifies whether a service account should be created
+## @param serviceAccount.annotations Annotations to add to the service account
+## @param serviceAccount.name The name of the service account to use.
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -34,14 +49,18 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+## @param rbac.create create role and binding for service account
 rbac:
   create: true
 
+## @param podAnnotations annotations to add to each pod
 podAnnotations: {}
 
+## @param podSecurityContext security context to add to each pod
 podSecurityContext: {}
   # fsGroup: 2000
 
+## @param securityContext security context to add to each container
 securityContext: {}
   # capabilities:
   #   drop:
@@ -51,7 +70,7 @@ securityContext: {}
   # runAsUser: 1000
 
 
-
+## @param resources pod resource requests & limits
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -64,9 +83,11 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-
+## @param nodeSelector node selector to add to each pod
 nodeSelector: {}
 
+## @param tolerations tolerations to add to each pod
 tolerations: []
 
+## @param affinity affinity to add to each pod
 affinity: {}
