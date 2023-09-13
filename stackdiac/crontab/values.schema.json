@@ -1,0 +1,113 @@
+{
+    "title": "Chart Values",
+    "type": "object",
+    "properties": {
+        "image": {
+            "type": "object",
+            "properties": {
+                "repository": {
+                    "type": "string",
+                    "description": "kubectl image repository",
+                    "default": "bitnami/kubectl"
+                },
+                "tag": {
+                    "type": "string",
+                    "description": "kubectl image tag",
+                    "default": ""
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "description": "kubectl image pull policy",
+                    "default": "IfNotPresent"
+                }
+            }
+        },
+        "cronjobs": {
+            "type": "object",
+            "description": "cronjobs map to configure",
+            "default": {}
+        },
+        "imagePullSecrets": {
+            "type": "array",
+            "description": "Specify image pull secrets ",
+            "default": [],
+            "items": {}
+        },
+        "nameOverride": {
+            "type": "string",
+            "description": "String to partially override crontab.fullname",
+            "default": ""
+        },
+        "fullnameOverride": {
+            "type": "string",
+            "description": "String to fully override crontab.fullname",
+            "default": ""
+        },
+        "serviceAccount": {
+            "type": "object",
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "description": "Specifies whether a service account should be created",
+                    "default": true
+                },
+                "annotations": {
+                    "type": "object",
+                    "description": "Annotations to add to the service account",
+                    "default": {}
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name of the service account to use.",
+                    "default": ""
+                }
+            }
+        },
+        "rbac": {
+            "type": "object",
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "description": "create role and binding for service account",
+                    "default": true
+                }
+            }
+        },
+        "podAnnotations": {
+            "type": "object",
+            "description": "annotations to add to each pod",
+            "default": {}
+        },
+        "podSecurityContext": {
+            "type": "object",
+            "description": "security context to add to each pod",
+            "default": {}
+        },
+        "securityContext": {
+            "type": "object",
+            "description": "security context to add to each container",
+            "default": {}
+        },
+        "resources": {
+            "type": "object",
+            "description": "pod resource requests & limits",
+            "default": {}
+        },
+        "nodeSelector": {
+            "type": "object",
+            "description": "node selector to add to each pod",
+            "default": {}
+        },
+        "tolerations": {
+            "type": "array",
+            "description": "tolerations to add to each pod",
+            "default": [],
+            "items": {}
+        },
+        "affinity": {
+            "type": "object",
+            "description": "affinity to add to each pod",
+            "default": {}
+        }
+    }
+}
