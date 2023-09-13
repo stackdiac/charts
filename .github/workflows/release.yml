@@ -29,7 +29,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@latest
+        uses: helm/chart-releaser-action@main
         with:
           charts_dir: stackdiac
           skip_existing: true
