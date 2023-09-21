@@ -14,3 +14,11 @@ readme:
 	helm repo update
 	helm search repo stackdiac >> README.md
 	echo '~~~' >> README.md
+
+install-helmify:
+	go install github.com/arttor/helmify/cmd/helmify@latest
+
+hcloud-csi-driver:
+	#-rm -fR stackdiac/hcloud-csi-driver/
+	curl https://raw.githubusercontent.com/hetznercloud/csi-driver/v2.4.0/deploy/kubernetes/hcloud-csi.yml | \
+		helmify -vv stackdiac/hcloud-csi-driver

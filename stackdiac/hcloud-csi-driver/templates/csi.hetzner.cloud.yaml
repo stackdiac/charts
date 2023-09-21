@@ -1,0 +1,12 @@
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: {{ include "hcloud-csi-driver.fullname" . }}-csi.hetzner.cloud
+  labels:
+  {{- include "hcloud-csi-driver.labels" . | nindent 4 }}
+spec:
+  attachRequired: true
+  fsGroupPolicy: File
+  podInfoOnMount: true
+  volumeLifecycleModes:
+  - Persistent

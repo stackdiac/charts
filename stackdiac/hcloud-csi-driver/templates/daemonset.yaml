@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "hcloud-csi-driver.fullname" . }}-hcloud-csi-node
+  labels:
+    app: hcloud-csi
+  {{- include "hcloud-csi-driver.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: hcloud-csi
+    {{- include "hcloud-csi-driver.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: hcloud-csi
+      {{- include "hcloud-csi-driver.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: instance.hetzner.cloud/is-root-server
+                operator: NotIn
+                values:
+                - "true"
+      containers:
+      - args: {{- toYaml .Values.hcloudCsiNode.csiNodeDriverRegistrar.args | nindent 8
+          }}
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiNode.csiNodeDriverRegistrar.image.repository }}:{{ .Values.hcloudCsiNode.csiNodeDriverRegistrar.image.tag
+          | default .Chart.AppVersion }}
+        name: csi-node-driver-registrar
+        resources: {}
+        volumeMounts:
+        - mountPath: /run/csi
+          name: plugin-dir
+        - mountPath: /registration
+          name: registration-dir
+      - command:
+        - /bin/hcloud-csi-driver-node
+        env:
+        - name: CSI_ENDPOINT
+          value: {{ quote .Values.hcloudCsiNode.hcloudCsiDriver.env.csiEndpoint }}
+        - name: METRICS_ENDPOINT
+          value: {{ quote .Values.hcloudCsiNode.hcloudCsiDriver.env.metricsEndpoint }}
+        - name: ENABLE_METRICS
+          value: {{ quote .Values.hcloudCsiNode.hcloudCsiDriver.env.enableMetrics }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiNode.hcloudCsiDriver.image.repository }}:{{ .Values.hcloudCsiNode.hcloudCsiDriver.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.hcloudCsiNode.hcloudCsiDriver.imagePullPolicy }}
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          timeoutSeconds: 3
+        name: hcloud-csi-driver
+        ports:
+        - containerPort: 9189
+          name: metrics
+        - containerPort: 9808
+          name: healthz
+          protocol: TCP
+        resources: {}
+        securityContext: {{- toYaml .Values.hcloudCsiNode.hcloudCsiDriver.containerSecurityContext
+          | nindent 10 }}
+        volumeMounts:
+        - mountPath: /var/lib/kubelet
+          mountPropagation: Bidirectional
+          name: kubelet-dir
+        - mountPath: /run/csi
+          name: plugin-dir
+        - mountPath: /dev
+          name: device-dir
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiNode.livenessProbe.image.repository }}:{{ .Values.hcloudCsiNode.livenessProbe.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.hcloudCsiNode.livenessProbe.imagePullPolicy }}
+        name: liveness-probe
+        resources: {}
+        volumeMounts:
+        - mountPath: /run/csi
+          name: plugin-dir
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/lib/kubelet
+          type: Directory
+        name: kubelet-dir
+      - hostPath:
+          path: /var/lib/kubelet/plugins/csi.hetzner.cloud/
+          type: DirectoryOrCreate
+        name: plugin-dir
+      - hostPath:
+          path: /var/lib/kubelet/plugins_registry/
+          type: Directory
+        name: registration-dir
+      - hostPath:
+          path: /dev
+          type: Directory
+        name: device-dir

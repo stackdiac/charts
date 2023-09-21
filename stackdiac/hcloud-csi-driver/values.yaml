@@ -1,0 +1,71 @@
+hcloudCsiController:
+  csiAttacher:
+    args:
+    - --default-fstype=ext4
+    image:
+      repository: registry.k8s.io/sig-storage/csi-attacher
+      tag: v4.1.0
+  csiProvisioner:
+    args:
+    - --feature-gates=Topology=true
+    - --default-fstype=ext4
+    image:
+      repository: registry.k8s.io/sig-storage/csi-provisioner
+      tag: v3.4.0
+  csiResizer:
+    image:
+      repository: registry.k8s.io/sig-storage/csi-resizer
+      tag: v1.7.0
+  hcloudCsiDriver:
+    env:
+      csiEndpoint: unix:///run/csi/socket
+      enableMetrics: "true"
+      metricsEndpoint: 0.0.0.0:9189
+    image:
+      repository: hetznercloud/hcloud-csi-driver
+      tag: v{{ .Chart.Version }}
+    imagePullPolicy: Always
+  livenessProbe:
+    image:
+      repository: registry.k8s.io/sig-storage/livenessprobe
+      tag: v2.9.0
+    imagePullPolicy: Always
+  replicas: 1
+  serviceAccount:
+    annotations: {}
+hcloudCsiControllerMetrics:
+  ports:
+  - name: metrics
+    port: 9189
+    targetPort: metrics
+  type: ClusterIP
+hcloudCsiNode:
+  csiNodeDriverRegistrar:
+    args:
+    - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.hetzner.cloud/socket
+    image:
+      repository: registry.k8s.io/sig-storage/csi-node-driver-registrar
+      tag: v2.7.0
+  hcloudCsiDriver:
+    containerSecurityContext:
+      privileged: true
+    env:
+      csiEndpoint: unix:///run/csi/socket
+      enableMetrics: "true"
+      metricsEndpoint: 0.0.0.0:9189
+    image:
+      repository: hetznercloud/hcloud-csi-driver
+      tag: v{{ .Chart.Version }}
+    imagePullPolicy: Always
+  livenessProbe:
+    image:
+      repository: registry.k8s.io/sig-storage/livenessprobe
+      tag: v2.9.0
+    imagePullPolicy: Always
+hcloudCsiNodeMetrics:
+  ports:
+  - name: metrics
+    port: 9189
+    targetPort: metrics
+  type: ClusterIP
+kubernetesClusterDomain: cluster.local

@@ -1,0 +1,11 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ include "hcloud-csi-driver.fullname" . }}-hcloud-volumes
+  labels:
+  {{- include "hcloud-csi-driver.labels" . | nindent 4 }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+allowVolumeExpansion: true
+provisioner: csi.hetzner.cloud
+volumeBindingMode: WaitForFirstConsumer

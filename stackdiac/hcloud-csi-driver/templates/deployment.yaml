@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hcloud-csi-driver.fullname" . }}-hcloud-csi-controller
+  labels:
+  {{- include "hcloud-csi-driver.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.hcloudCsiController.replicas }}
+  selector:
+    matchLabels:
+      app: hcloud-csi-controller
+    {{- include "hcloud-csi-driver.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: hcloud-csi-controller
+      {{- include "hcloud-csi-driver.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - args: {{- toYaml .Values.hcloudCsiController.csiAttacher.args | nindent 8 }}
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiController.csiAttacher.image.repository }}:{{ .Values.hcloudCsiController.csiAttacher.image.tag
+          | default .Chart.AppVersion }}
+        name: csi-attacher
+        resources: {}
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiController.csiResizer.image.repository }}:{{ .Values.hcloudCsiController.csiResizer.image.tag
+          | default .Chart.AppVersion }}
+        name: csi-resizer
+        resources: {}
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - args: {{- toYaml .Values.hcloudCsiController.csiProvisioner.args | nindent 8 }}
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiController.csiProvisioner.image.repository }}:{{ .Values.hcloudCsiController.csiProvisioner.image.tag
+          | default .Chart.AppVersion }}
+        name: csi-provisioner
+        resources: {}
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - command:
+        - /bin/hcloud-csi-driver-controller
+        env:
+        - name: CSI_ENDPOINT
+          value: {{ quote .Values.hcloudCsiController.hcloudCsiDriver.env.csiEndpoint }}
+        - name: METRICS_ENDPOINT
+          value: {{ quote .Values.hcloudCsiController.hcloudCsiDriver.env.metricsEndpoint
+            }}
+        - name: ENABLE_METRICS
+          value: {{ quote .Values.hcloudCsiController.hcloudCsiDriver.env.enableMetrics
+            }}
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: HCLOUD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: hcloud
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiController.hcloudCsiDriver.image.repository }}:{{ .Values.hcloudCsiController.hcloudCsiDriver.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.hcloudCsiController.hcloudCsiDriver.imagePullPolicy
+          }}
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          timeoutSeconds: 3
+        name: hcloud-csi-driver
+        ports:
+        - containerPort: 9189
+          name: metrics
+        - containerPort: 9808
+          name: healthz
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.hcloudCsiController.livenessProbe.image.repository }}:{{ .Values.hcloudCsiController.livenessProbe.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.hcloudCsiController.livenessProbe.imagePullPolicy }}
+        name: liveness-probe
+        resources: {}
+        volumeMounts:
+        - mountPath: /run/csi
+          name: socket-dir
+      serviceAccountName: {{ include "hcloud-csi-driver.fullname" . }}-hcloud-csi-controller
+      volumes:
+      - emptyDir: {}
+        name: socket-dir
