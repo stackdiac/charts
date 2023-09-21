@@ -23,7 +23,7 @@ hcloudCsiController:
       metricsEndpoint: 0.0.0.0:9189
     image:
       repository: hetznercloud/hcloud-csi-driver
-      tag: v{{ .Chart.Version }}
+      tag: v2.4.0
     imagePullPolicy: Always
   livenessProbe:
     image:
@@ -55,7 +55,7 @@ hcloudCsiNode:
       metricsEndpoint: 0.0.0.0:9189
     image:
       repository: hetznercloud/hcloud-csi-driver
-      tag: v{{ .Chart.Version }}
+      tag: v2.4.0
     imagePullPolicy: Always
   livenessProbe:
     image:
