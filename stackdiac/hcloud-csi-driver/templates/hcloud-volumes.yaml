@@ -1,7 +1,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: {{ include "hcloud-csi-driver.fullname" . }}-hcloud-volumes
+  name: {{ .Values.storageClassName }}
   labels:
   {{- include "hcloud-csi-driver.labels" . | nindent 4 }}
   annotations:

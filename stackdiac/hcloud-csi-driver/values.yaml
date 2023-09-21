@@ -69,3 +69,4 @@ hcloudCsiNodeMetrics:
     targetPort: metrics
   type: ClusterIP
 kubernetesClusterDomain: cluster.local
+storageClassName: hcloud-volumes
