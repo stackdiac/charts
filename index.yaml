@@ -11,4 +11,15 @@ entries:
     urls:
     - https://github.com/stackdiac/charts/releases/download/crontab-0.0.1/crontab-0.0.1.tgz
     version: 0.0.1
-generated: "2023-09-13T14:44:00.05751659Z"
+  hcloud-csi-driver:
+  - apiVersion: v2
+    appVersion: 2.4.0
+    created: "2023-09-21T20:04:10.301817712Z"
+    description: A Helm chart for Kubernetes
+    digest: cddaea7df4c4e84c582986543e62cba05bb1b5d6bb5c2b51b4440d8019a90c09
+    name: hcloud-csi-driver
+    type: application
+    urls:
+    - hcloud-csi-driver-2.4.0.tgz
+    version: 2.4.0
+generated: "2023-09-21T20:04:10.301835911Z"
